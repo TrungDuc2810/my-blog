@@ -18,5 +18,6 @@ public class UserDto {
     private String email;
     @NotEmpty
     private String registeredAt;
+    private boolean enabled;
     private Set<Role> roles;
 }

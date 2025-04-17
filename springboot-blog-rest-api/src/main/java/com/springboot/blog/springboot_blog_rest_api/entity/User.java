@@ -24,6 +24,7 @@ public class User {
     @Column(nullable=false) private String password;
     @Column(nullable=false, unique=true) private String email;
     @Column(nullable=false) private String registeredAt;
+    @Column(nullable=false) private boolean enabled = false;
     @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name="users_roles",
             joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),

@@ -75,6 +75,35 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
-        return "User registered successfully!!!";
+        String verificationToken = jwtTokenProvider.generateVerificationToken(user.getEmail());
+
+        return verificationToken;
+    }
+
+    @Override
+    public String verifyEmail(String token) {
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Invalid token or expired!!!");
+        }
+
+        String email = jwtTokenProvider.getUsername(token);
+        String purpose = jwtTokenProvider.getPurposes(token);
+
+        if (!"email_verification".equals(purpose)) {
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Wrong type of token!!!");
+        }
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "User not found!!!");
+        }
+        if (user.isEnabled()) {
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "User is enabled!!!");
+        }
+
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        return "User verified successfully!!!";
     }
 }

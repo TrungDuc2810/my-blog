@@ -2,8 +2,10 @@ package com.springboot.blog.springboot_blog_rest_api.controller;
 
 import com.springboot.blog.springboot_blog_rest_api.payload.LoginDto;
 import com.springboot.blog.springboot_blog_rest_api.payload.RegisterDto;
+import com.springboot.blog.springboot_blog_rest_api.repository.UserRepository;
 import com.springboot.blog.springboot_blog_rest_api.security.JwtTokenProvider;
 import com.springboot.blog.springboot_blog_rest_api.service.AuthService;
+import com.springboot.blog.springboot_blog_rest_api.service.impl.EmailServiceImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -16,10 +18,17 @@ import java.util.List;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
+    private final UserRepository userRepository;
+    private final EmailServiceImpl emailService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public AuthController(AuthService authService, JwtTokenProvider jwtTokenProvider) {
+    public AuthController(AuthService authService,
+                          UserRepository userRepository,
+                          EmailServiceImpl emailService,
+                          JwtTokenProvider jwtTokenProvider) {
         this.authService = authService;
+        this.userRepository = userRepository;
+        this.emailService = emailService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -47,10 +56,16 @@ public class AuthController {
                 .sameSite("Strict")
                 .build();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, rolesCookie.toString())
-                .build();
+        String username = jwtTokenProvider.getUsername(token);
+        boolean isEnabled = userRepository.findByUsername(username).get().isEnabled();
+
+        if (isEnabled) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, rolesCookie.toString())
+                    .build();
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping("/logout")
@@ -81,7 +96,20 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterDto registerDto) {
-        String responseMessage = authService.register(registerDto);
-        return new ResponseEntity<>(responseMessage, HttpStatus.CREATED);
+        String verifyToken = authService.register(registerDto);
+
+        String verifyUrl = "http://localhost:8080/api/auth/verify?token=" + verifyToken;
+        String subject = "ACCOUNT CONFIRM";
+        String content = "This link will expire within five minutes. Click on it to confirm your account: " + verifyUrl;
+
+        emailService.sendMail(registerDto.getEmail(), subject, content);
+
+        return new ResponseEntity<>("Registered successfully!!! Check your email to confirm your account.", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
+        String responseMessage = authService.verifyEmail(token);
+        return new ResponseEntity<>(responseMessage, HttpStatus.OK);
     }
 }

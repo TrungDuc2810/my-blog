@@ -75,6 +75,18 @@ public class JwtTokenProvider {
         return roles != null ? roles : Collections.emptyList();
     }
 
+    public String getPurposes(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        String purposes = claims.get("purpose").toString();
+
+        return purposes;
+    }
+
     // Validate JWT token
     public boolean validateToken(String token) {
         try {
@@ -86,5 +98,18 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String generateVerificationToken(String email) {
+        Date now = new Date();
+        Date expirationDate = new Date(now.getTime() + 5 * 60 * 1000);
+
+        return Jwts.builder()
+                .subject(email)
+                .claim("purpose", "email_verification")
+                .issuedAt(now)
+                .expiration(expirationDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 }
