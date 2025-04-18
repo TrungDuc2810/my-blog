@@ -21,8 +21,10 @@ public class VNPayService {
 
     public String createOrder(HttpServletRequest request,
                               BigDecimal amount,
-                              String orderInfor) {
-        String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
+                              String orderInfo) {
+        String[] parts = orderInfo.split(":");
+        String orderId = parts.length > 1 ? parts[1].trim() : null;
+        String vnp_TxnRef = orderId;
         String vnp_IpAddr = VNPayConfig.getIpAddress(request);
 
         Map<String, String> vnp_Params = new HashMap<>();
@@ -33,7 +35,7 @@ public class VNPayService {
         vnp_Params.put("vnp_OrderType", VNPayConfig.vnp_OrderType);
         vnp_Params.put("vnp_Locale", VNPayConfig.vnp_Locale);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", orderInfor);
+        vnp_Params.put("vnp_OrderInfo", orderInfo);
         vnp_Params.put("vnp_Amount", String.valueOf(amount.multiply(BigDecimal.valueOf(100))));
         vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);

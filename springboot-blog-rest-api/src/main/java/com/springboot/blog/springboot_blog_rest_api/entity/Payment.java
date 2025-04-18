@@ -13,32 +13,28 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String vnp_txn_ref;
-    private String vnp_transaction_no;
-    private BigDecimal vnp_amount;
-    private String vnp_bank_code;
-    private String vnp_card_type;
-    private String vnp_order_info;
-    private String vnp_response_code;
-    private String vnp_pay_date;
-    private String vnp_transaction_status;
+    private String vnp_BankCode;
+    private String vnp_TransactionNo;
+    private String vnp_TmnCode;
+    private String vnp_OrderInfo;
+    private String vnp_TxnRef;
+    private BigDecimal vnp_Amount;
+    private String vnp_BankTranNo;
+    private String vnp_ResponseCode;
+    private LocalDateTime vnp_PayDate;
+    private String vnp_SecureHash;
+    private String vnp_CardType;
+    private String vnp_TransactionStatus;
+    private String paymentStatus;
+    private LocalDateTime created_at;
     @Lob
     @Column(columnDefinition = "TEXT")
-    private String raw_data;
+    private String raw_callback_url;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
     @PrePersist
     protected void onCreate() {
         this.created_at = LocalDateTime.now();
-        this.updated_at = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate() {
-        this.updated_at = LocalDateTime.now();
     }
 }

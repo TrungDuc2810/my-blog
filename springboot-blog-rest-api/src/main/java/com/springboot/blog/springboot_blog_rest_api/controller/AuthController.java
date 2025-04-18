@@ -36,12 +36,11 @@ public class AuthController {
     public ResponseEntity<Void> login(@RequestBody LoginDto loginDto) {
         String token = authService.login(loginDto);
 
-        // Sử dụng ResponseCookie từ Spring Framework
         ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", token)
                 .httpOnly(true)
                 .secure(true)  // Chỉ sử dụng nếu server chạy HTTPS
                 .path("/")
-                .maxAge(24 * 60 * 60 * 7)  // Cookie tồn tại trong 7 ngày
+                .maxAge(24 * 60 * 60 * 7)
                 .sameSite("Strict")  // Bảo vệ chống lại CSRF
                 .build();
 

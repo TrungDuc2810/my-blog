@@ -18,14 +18,11 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
-
     @Value("${app.jwt-secret}")
     private String jwtSecret;
-
     @Value("${app.jwt-expiration-milliseconds}")
     private long jwtExpirationDate;
 
-    // Generate JWT token with roles
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         Date currentDate = new Date();
@@ -36,11 +33,9 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-//        System.out.println("Roles being added to token: " + roles);  // Debugging
-
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roles)  // Ensure roles are non-null
+                .claim("roles", roles)
                 .setIssuedAt(currentDate)
                 .setExpiration(expirationDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -51,7 +46,6 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
-    // Extract username from JWT token
     public String getUsername(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())
@@ -61,7 +55,6 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // Extract roles from JWT token
     public List<String> getRoles(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(getSigningKey())
@@ -69,7 +62,6 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
 
-        // Return an empty list if roles is null
         List<String> roles = claims.get("roles", List.class);
         System.out.println("Roles extracted from token: " + roles);  // Debugging
         return roles != null ? roles : Collections.emptyList();
@@ -87,7 +79,6 @@ public class JwtTokenProvider {
         return purposes;
     }
 
-    // Validate JWT token
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
