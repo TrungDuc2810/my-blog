@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class HttpCookieOAuth2AuthorizationRequest implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
-
     private static final String COOKIE_NAME = "oauth2_auth_request";
 
     @Override
@@ -35,7 +34,7 @@ public class HttpCookieOAuth2AuthorizationRequest implements AuthorizationReques
     public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
                                                                  HttpServletResponse response) {
         OAuth2AuthorizationRequest authorizationRequest = this.loadAuthorizationRequest(request);
-        CookieUtil.deleteCookie(request, response, COOKIE_NAME); // Xóa cookie sau khi đọc
+        CookieUtil.deleteCookie(request, response, COOKIE_NAME);
         return authorizationRequest;
     }
 }

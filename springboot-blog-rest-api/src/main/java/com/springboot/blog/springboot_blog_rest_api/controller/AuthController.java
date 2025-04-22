@@ -6,13 +6,16 @@ import com.springboot.blog.springboot_blog_rest_api.repository.UserRepository;
 import com.springboot.blog.springboot_blog_rest_api.security.JwtTokenProvider;
 import com.springboot.blog.springboot_blog_rest_api.service.AuthService;
 import com.springboot.blog.springboot_blog_rest_api.service.impl.EmailServiceImpl;
-import org.springframework.http.HttpHeaders;
+import com.springboot.blog.springboot_blog_rest_api.utils.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,64 +36,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<Void> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
         String token = authService.login(loginDto);
-
-        ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", token)
-                .httpOnly(true)
-                .secure(true)  // Chỉ sử dụng nếu server chạy HTTPS
-                .path("/")
-                .maxAge(24 * 60 * 60 * 7)
-                .sameSite("Strict")  // Bảo vệ chống lại CSRF
-                .build();
-
         List<String> roles = jwtTokenProvider.getRoles(token);
-        String rolesString = String.join(",", roles);
-
-        ResponseCookie rolesCookie = ResponseCookie.from("roles", rolesString)
-                .httpOnly(false)
-                .secure(true)
-                .path("/")
-                .maxAge(24 * 60 * 60 * 7)
-                .sameSite("Strict")
-                .build();
-
         String username = jwtTokenProvider.getUsername(token);
         boolean isEnabled = userRepository.findByUsername(username).get().isEnabled();
 
         if (isEnabled) {
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                    .header(HttpHeaders.SET_COOKIE, rolesCookie.toString())
-                    .build();
+            CookieUtil.setAuthCookies(response, token, roles);
+            return ResponseEntity.ok().build();
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
-        // Tạo cookie jwtToken hết hạn để xóa
-        ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)  // Đặt thời gian hết hạn về 0 để xóa cookie
-                .sameSite("Strict")
-                .build();
-
-        // Tạo cookie roles hết hạn để xóa
-        ResponseCookie rolesCookie = ResponseCookie.from("roles", "")
-                .httpOnly(false)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Strict")
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, rolesCookie.toString())
-                .build();
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        CookieUtil.clearAuthCookies(response);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/register")
@@ -104,6 +66,17 @@ public class AuthController {
         emailService.sendMail(registerDto.getEmail(), subject, content);
 
         return new ResponseEntity<>("Registered successfully!!! Check your email to confirm your account.", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "username", userDetails.getUsername()
+        ));
     }
 
     @GetMapping("/verify")
