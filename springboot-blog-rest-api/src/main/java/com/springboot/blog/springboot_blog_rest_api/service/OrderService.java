@@ -8,5 +8,6 @@ public interface OrderService {
     OrderDto updateOrder(long id, OrderDto orderDto);
     OrderDto getOrderById(long id);
     ListResponse<OrderDto> getAllOrders(int pageNo, int pageSize, String sortBy, String sortDir);
+    ListResponse<OrderDto> getOrdersByUserId(long userId, int pageNo, int pageSize, String sortBy, String sortDir);
     void deleteOrder(long id);
 }

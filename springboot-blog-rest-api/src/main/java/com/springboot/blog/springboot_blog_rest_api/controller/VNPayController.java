@@ -8,10 +8,12 @@ import com.springboot.blog.springboot_blog_rest_api.service.OrderService;
 import com.springboot.blog.springboot_blog_rest_api.service.PaymentService;
 import com.springboot.blog.springboot_blog_rest_api.service.impl.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -33,16 +35,16 @@ public class VNPayController {
         this.orderRepository = orderRepository;
     }
 
-    @PostMapping("/create-payment")
+    @GetMapping("/create-payment")
     public ResponseEntity<String> submitOrder(@RequestParam("amount") BigDecimal orderTotal,
                                               @RequestParam("orderInfo") String orderInfo,
                                               HttpServletRequest request) {
         String vnpayUrl = vnPayService.createOrder(request, orderTotal, orderInfo);
-        return new ResponseEntity<>("paymentUrl: " + vnpayUrl, HttpStatus.OK);
+        return new ResponseEntity<>(vnpayUrl, HttpStatus.OK);
     }
 
     @GetMapping("/callback-payment")
-    public ResponseEntity<?> paymentCompleted(HttpServletRequest request) {
+    public ResponseEntity<?> paymentCompleted(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int paymentStatus = vnPayService.orderReturn(request);
         String queryString = request.getQueryString();
 
@@ -89,6 +91,9 @@ public class VNPayController {
             Order order = orderRepository.findById(saved.getOrderId()).orElse(null);
             order.setStatus(OrderStatus.valueOf("CONFIRMED"));
             orderRepository.save(order);
+
+            response.sendRedirect("http://localhost:5173/orders");
+
             return ResponseEntity.ok(saved);
         }
 

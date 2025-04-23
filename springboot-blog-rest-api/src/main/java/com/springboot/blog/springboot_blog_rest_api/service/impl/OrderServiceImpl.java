@@ -72,6 +72,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public ListResponse<OrderDto> getOrdersByUserId(long userId, int pageNo, int pageSize, String sortBy, String sortDir) {
+        PageRequest pageRequest = PaginationUtils.createPageRequest(pageNo, pageSize, sortBy, sortDir);
+
+        Page<Order> orders = orderRepository.findByUserId(userId, pageRequest);
+
+        return PaginationUtils.toListResponse(orders,
+                order -> mapper.mapToDto(order, OrderDto.class));
+    }
+
+    @Override
     public void deleteOrder(long id) {
         Order order = orderRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Order", "id", String.valueOf(id)));

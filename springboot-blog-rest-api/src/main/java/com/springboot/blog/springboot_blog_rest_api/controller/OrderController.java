@@ -38,6 +38,17 @@ public class OrderController {
         return orderService.getAllOrders(pageNo, pageSize, sortBy, sortDir);
     }
 
+    @GetMapping("/users/{id}")
+    public ListResponse<OrderDto> getOrdersByUserId(
+            @PathVariable("id") long userId,
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir) {
+
+        return orderService.getOrdersByUserId(userId, pageNo, pageSize, sortBy, sortDir);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<OrderDto> getOrder(@PathVariable(name = "id") long id) {
         return new ResponseEntity<>(orderService.getOrderById(id), HttpStatus.OK);
