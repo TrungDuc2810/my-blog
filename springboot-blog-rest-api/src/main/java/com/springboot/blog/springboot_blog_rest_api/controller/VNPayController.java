@@ -92,7 +92,7 @@ public class VNPayController {
             order.setStatus(OrderStatus.valueOf("CONFIRMED"));
             orderRepository.save(order);
 
-            response.sendRedirect("http://localhost:5173/orders");
+            response.sendRedirect("http://localhost:3000/orders");
 
             return ResponseEntity.ok(saved);
         }

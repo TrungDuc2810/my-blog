@@ -15,6 +15,10 @@ import java.util.List;
 public class OAuth2UserServiceHelper {
     private PasswordEncoder passwordEncoder;
 
+    public OAuth2UserServiceHelper(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @Transactional
     public User registerOAuthUser(String email, String name,
                                   RoleRepository roleRepository,

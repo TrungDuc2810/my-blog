@@ -110,7 +110,7 @@ public class SecurityConfig {
 
                     CookieUtil.setAuthCookies(response, jwt, roles);
 
-                    response.sendRedirect("http://localhost:5173/");
+                    response.sendRedirect("http://localhost:3000/");
                 }));
     }
 
@@ -134,10 +134,5 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
