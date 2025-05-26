@@ -36,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
         String token = authService.login(loginDto);
         List<String> roles = jwtTokenProvider.getRoles(token);
         String username = jwtTokenProvider.getUsername(token);
@@ -50,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
         CookieUtil.clearAuthCookies(response);
         return ResponseEntity.ok().build();
     }

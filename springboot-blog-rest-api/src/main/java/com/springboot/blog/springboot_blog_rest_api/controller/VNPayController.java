@@ -9,6 +9,7 @@ import com.springboot.blog.springboot_blog_rest_api.service.PaymentService;
 import com.springboot.blog.springboot_blog_rest_api.service.impl.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,8 @@ public class VNPayController {
     private final VNPayService vnPayService;
     private final PaymentService paymentService;
     private final OrderRepository orderRepository;
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     public VNPayController(VNPayService vnPayService, PaymentService paymentService, OrderRepository orderRepository, OrderService orderService) {
         this.paymentService = paymentService;
@@ -92,7 +95,7 @@ public class VNPayController {
             order.setStatus(OrderStatus.valueOf("CONFIRMED"));
             orderRepository.save(order);
 
-            response.sendRedirect("http://localhost:3000/orders");
+            response.sendRedirect(frontendUrl + "/orders");
 
             return ResponseEntity.ok(saved);
         }

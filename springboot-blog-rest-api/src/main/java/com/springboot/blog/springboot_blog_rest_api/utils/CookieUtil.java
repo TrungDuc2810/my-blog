@@ -32,7 +32,7 @@ public class CookieUtil {
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
-        cookie.setSecure(false);
+        cookie.setSecure(true);
         response.addCookie(cookie);
     }
 
@@ -55,18 +55,18 @@ public class CookieUtil {
     public static void setAuthCookies(HttpServletResponse response, String jwt, List<String> roles) {
         ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", jwt)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie rolesCookie = ResponseCookie.from("roles", String.join(",", roles))
-                .httpOnly(false)
-                .secure(false)
+                .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
@@ -76,18 +76,18 @@ public class CookieUtil {
     public static void clearAuthCookies(HttpServletResponse response) {
         ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie rolesCookie = ResponseCookie.from("roles", "")
-                .httpOnly(false)
-                .secure(false)
+                .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());

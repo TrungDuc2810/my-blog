@@ -9,6 +9,7 @@ import com.springboot.blog.springboot_blog_rest_api.security.JwtTokenProvider;
 import com.springboot.blog.springboot_blog_rest_api.service.impl.CustomOAuth2UserService;
 import com.springboot.blog.springboot_blog_rest_api.service.impl.OAuth2UserServiceHelper;
 import com.springboot.blog.springboot_blog_rest_api.utils.CookieUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,8 +21,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -39,6 +38,8 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final HttpCookieOAuth2AuthorizationRequest httpCookieOAuth2AuthorizationRequest;
     private final OAuth2UserServiceHelper oAuth2UserServiceHelper;
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
                           HttpCookieOAuth2AuthorizationRequest httpCookieOAuth2AuthorizationRequest,
@@ -98,7 +99,6 @@ public class SecurityConfig {
                     }
 
                     var userDetails = userDetailsService.loadUserByUsername(email);
-
                     var authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
 
@@ -110,7 +110,7 @@ public class SecurityConfig {
 
                     CookieUtil.setAuthCookies(response, jwt, roles);
 
-                    response.sendRedirect("http://localhost:3000/");
+                    response.sendRedirect(frontendUrl);
                 }));
     }
 
