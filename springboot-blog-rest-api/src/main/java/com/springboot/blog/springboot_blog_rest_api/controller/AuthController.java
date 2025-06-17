@@ -48,6 +48,7 @@ public class AuthController {
             // Trả về thông tin user trong response body để frontend biết đăng nhập thành công
             Map<String, Object> userInfo = Map.of(
                     "username", username,
+                    "roles", roles,
                     "authenticated", true
             );
             
