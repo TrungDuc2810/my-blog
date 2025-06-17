@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
@@ -17,41 +16,59 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.List;
 import java.io.IOException;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
+import org.springframework.util.StringUtils;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
     private JwtTokenProvider jwtTokenProvider;
-    @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    public void setJwtTokenProvider(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
+
+    @Autowired
+    public void setUserDetailsService(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-
-        String token = CookieUtil.getCookie(request, "jwtToken")
-                .map(Cookie::getValue).orElse(null);
-
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            String username = jwtTokenProvider.getUsername(token);
-            List<String> roles = jwtTokenProvider.getRoles(token);
-
-            List<SimpleGrantedAuthority> authorities = roles.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (userDetails != null) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        
+        // Get JWT from cookie
+        String token = null;
+        Optional<Cookie> jwtCookie = CookieUtil.getCookie(request, "jwtToken");
+        
+        if (jwtCookie.isPresent()) {
+            token = jwtCookie.get().getValue();
+            System.out.println("Found JWT token in cookie: " + (token != null ? token.substring(0, Math.min(10, token.length())) + "..." : "null"));
+        } else {
+            System.out.println("No JWT cookie found in request to: " + request.getRequestURI());
         }
-
+        
+        // Validate token and set authentication
+        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+            String username = jwtTokenProvider.getUsername(token);
+            System.out.println("Valid token for user: " + username);
+            
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities()
+            );
+            
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            System.out.println("Set authentication for user: " + username);
+        }
+        
         filterChain.doFilter(request, response);
     }
 }

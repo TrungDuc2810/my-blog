@@ -3,6 +3,7 @@ package com.springboot.blog.springboot_blog_rest_api.config;
 import com.springboot.blog.springboot_blog_rest_api.entity.User;
 import com.springboot.blog.springboot_blog_rest_api.repository.RoleRepository;
 import com.springboot.blog.springboot_blog_rest_api.repository.UserRepository;
+import com.springboot.blog.springboot_blog_rest_api.security.CookieDebugFilter;
 import com.springboot.blog.springboot_blog_rest_api.security.CustomOAuth2AuthorizationRequestResolver;
 import com.springboot.blog.springboot_blog_rest_api.security.JwtAuthenticationFilter;
 import com.springboot.blog.springboot_blog_rest_api.security.JwtTokenProvider;
@@ -61,8 +62,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    UserRepository userRepository,
-                                                   RoleRepository roleRepository) throws Exception {
-        http.cors().and().csrf().disable();
+                                                   RoleRepository roleRepository,
+                                                   CookieDebugFilter cookieDebugFilter) throws Exception {
+        http.cors(cors -> {}).csrf(csrf -> csrf.disable());
+        http.addFilterBefore(cookieDebugFilter, UsernamePasswordAuthenticationFilter.class);
 
         configureAuthorizeRequests(http);
         configureOAuth2Login(http, userRepository, roleRepository);

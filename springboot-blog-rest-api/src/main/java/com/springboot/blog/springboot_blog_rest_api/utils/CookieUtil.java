@@ -53,27 +53,40 @@ public class CookieUtil {
     }
 
     public static void setAuthCookies(HttpServletResponse response, String jwt, List<String> roles) {
-        ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", jwt)
+        // Log trước khi thiết lập cookie
+        System.out.println("Setting auth cookies - JWT length: " + jwt.length() + ", Roles: " + roles);
+        
+        ResponseCookie.ResponseCookieBuilder jwtBuilder = ResponseCookie.from("jwtToken", jwt)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .sameSite("None")
-                .build();
-
-        ResponseCookie rolesCookie = ResponseCookie.from("roles", String.join(",", roles))
-                .httpOnly(true)
+                .maxAge(7 * 24 * 60 * 60);
+        
+        ResponseCookie.ResponseCookieBuilder rolesBuilder = ResponseCookie.from("roles", String.join(",", roles))
+                .httpOnly(false) // Set to false so frontend can read roles
                 .secure(true)
                 .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .sameSite("None")
-                .build();
-
+                .maxAge(7 * 24 * 60 * 60);
+        
+        // Thêm SameSite=None cho cross-origin
+        jwtBuilder.sameSite("None");
+        rolesBuilder.sameSite("None");
+        
+        ResponseCookie jwtCookie = jwtBuilder.build();
+        ResponseCookie rolesCookie = rolesBuilder.build();
+        
+        // Thêm cookies vào response
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, rolesCookie.toString());
+        
+        // Log sau khi thiết lập cookie
+        System.out.println("JWT Cookie: " + jwtCookie);
+        System.out.println("Roles Cookie: " + rolesCookie);
     }
 
     public static void clearAuthCookies(HttpServletResponse response) {
+        System.out.println("Clearing auth cookies");
+        
         ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", "")
                 .httpOnly(true)
                 .secure(true)
@@ -81,17 +94,20 @@ public class CookieUtil {
                 .maxAge(0)
                 .sameSite("None")
                 .build();
-
+        
         ResponseCookie rolesCookie = ResponseCookie.from("roles", "")
-                .httpOnly(true)
+                .httpOnly(false)  // Match the setting in setAuthCookies
                 .secure(true)
                 .path("/")
                 .maxAge(0)
                 .sameSite("None")
                 .build();
-
+        
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, rolesCookie.toString());
+        
+        System.out.println("Cleared JWT Cookie: " + jwtCookie);
+        System.out.println("Cleared Roles Cookie: " + rolesCookie);
     }
 
     // Ma hoa

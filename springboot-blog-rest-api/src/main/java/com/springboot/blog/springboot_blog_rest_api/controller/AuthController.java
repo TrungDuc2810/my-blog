@@ -44,7 +44,14 @@ public class AuthController {
 
         if (isEnabled) {
             CookieUtil.setAuthCookies(response, token, roles);
-            return ResponseEntity.ok().build();
+            
+            // Trả về thông tin user trong response body để frontend biết đăng nhập thành công
+            Map<String, Object> userInfo = Map.of(
+                    "username", username,
+                    "authenticated", true
+            );
+            
+            return ResponseEntity.ok(userInfo);
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
