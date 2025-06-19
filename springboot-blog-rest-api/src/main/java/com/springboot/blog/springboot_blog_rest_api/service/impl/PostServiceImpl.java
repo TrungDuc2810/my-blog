@@ -12,6 +12,9 @@ import com.springboot.blog.springboot_blog_rest_api.repository.MediaRepository;
 import com.springboot.blog.springboot_blog_rest_api.repository.PostRepository;
 import com.springboot.blog.springboot_blog_rest_api.service.PostService;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -94,14 +97,25 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Cacheable(value = "posts", key = "#id")
     public PostDto getPostById(Long id) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("Getting post by id: " + id);
+
         Post post = postRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Post", "id", String.valueOf(id)));
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Time taken to get post by id: " + (endTime - startTime) + " ms");
+
         return mapToDTO(post);
     }
 
     @Override
+    @CachePut(value = "posts", key = "#id")
     public PostDto updatePost(PostDto postDTO, Long id) {
+        System.out.println("Updating post by id: " + id);
+
         Post post = postRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Post", "id", String.valueOf(id)));
 
@@ -133,7 +147,10 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
+    @CacheEvict(value = "posts", key = "#id")
     public void deletePostById(Long id) {
+        System.out.println("Deleting post by id: " + id);
+
         Post post = postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post", "id", String.valueOf(id)));
         postRepository.delete(post);
     }

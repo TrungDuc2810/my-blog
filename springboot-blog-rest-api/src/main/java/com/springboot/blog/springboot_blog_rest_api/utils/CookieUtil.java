@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CookieUtil {
-    public static Optional<Cookie> getCookie(HttpServletRequest request,
-                                             String name) {
+    public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
 
         if (cookies != null) {
@@ -26,8 +25,7 @@ public class CookieUtil {
         return Optional.empty();
     }
 
-    public static void addCookie(HttpServletResponse response,
-                                 String name, String value, int maxAge) {
+    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
@@ -36,9 +34,7 @@ public class CookieUtil {
         response.addCookie(cookie);
     }
 
-    public static void deleteCookie(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    String name) {
+    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -110,12 +106,10 @@ public class CookieUtil {
         System.out.println("Cleared Roles Cookie: " + rolesCookie);
     }
 
-    // Ma hoa
     public static String serialize(Object obj) {
         return Base64.getUrlEncoder().encodeToString(SerializationUtils.serialize(obj));
     }
 
-    // Giai ma
     public static <T> T deserialize(Cookie cookie, Class<T> cls) {
         return cls.cast(SerializationUtils.deserialize(Base64.getUrlDecoder().decode(cookie.getValue())));
     }

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.io.Serializable;
+
 @CrossOrigin("*")
 @Entity
 @Getter
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="media")
-public class Media {
+public class Media implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;

@@ -1,16 +1,16 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
-import com.springboot.blog.springboot_blog_rest_api.entity.Media;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Set;
 
 @Data
 @NoArgsConstructor
-public class PostDto {
+public class PostDto implements Serializable {
     private long id;
     // title should not be null  or empty
     // title should have at least 2 characters

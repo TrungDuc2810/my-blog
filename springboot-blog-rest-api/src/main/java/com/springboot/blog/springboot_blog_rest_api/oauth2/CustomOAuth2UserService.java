@@ -1,4 +1,4 @@
-package com.springboot.blog.springboot_blog_rest_api.service.impl;
+package com.springboot.blog.springboot_blog_rest_api.oauth2;
 
 import com.springboot.blog.springboot_blog_rest_api.repository.RoleRepository;
 import com.springboot.blog.springboot_blog_rest_api.repository.UserRepository;
