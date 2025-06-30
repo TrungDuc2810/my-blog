@@ -10,6 +10,7 @@ import com.springboot.blog.springboot_blog_rest_api.repository.PostRepository;
 import com.springboot.blog.springboot_blog_rest_api.service.CommentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,24 +20,31 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private ModelMapper mapper;
+    private final ModelMapper mapper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository, ModelMapper mapper) {
+    public CommentServiceImpl(CommentRepository commentRepository,
+                              PostRepository postRepository,
+                              ModelMapper mapper,
+                              SimpMessagingTemplate simpMessagingTemplate) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.mapper = mapper;
+        this.simpMessagingTemplate = simpMessagingTemplate;
+
     }
 
     @Override
     public CommentDto createComment(long postId, CommentDto commentDto) {
         Comment comment = mapToEntity(commentDto);
-        // retrieve post entity by id
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", String.valueOf(postId)));
-        // set post to comment entity
+
         comment.setPost(post);
-        // save comment entity to database
+
         Comment newComment = commentRepository.save(comment);
+
         return mapToDto(newComment);
     }
 
@@ -82,6 +90,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setBody(commentDto.getBody());
 
         Comment updatedComment = commentRepository.save(comment);
+
         return mapToDto(updatedComment);
     }
 

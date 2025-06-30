@@ -1,10 +1,14 @@
 package com.springboot.blog.springboot_blog_rest_api.controller;
 
 import com.springboot.blog.springboot_blog_rest_api.payload.CommentDto;
+import com.springboot.blog.springboot_blog_rest_api.payload.CommentNotification;
 import com.springboot.blog.springboot_blog_rest_api.service.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,4 +55,30 @@ public class CommentController {
         commentService.deleteComment(postId, commentId);
         return new ResponseEntity<>("Comment deleted successfully", HttpStatus.OK);
     }
+
+    @MessageMapping("/posts/{postId}/comments/add")
+    @SendTo("/topic/posts/{postId}/comments")
+    public CommentNotification handleAddComment(@DestinationVariable Long postId, CommentDto commentDto) {
+        CommentDto savedComment = commentService.createComment(postId, commentDto);
+        return new CommentNotification("CREATE", postId, savedComment );
+    }
+
+    @MessageMapping("/posts/{postId}/comments/{commentId}/update")
+    @SendTo("/topic/posts/{postId}/comments")
+    public CommentNotification handleCommentUpdate(@DestinationVariable Long postId,
+                                                   @DestinationVariable Long commentId,
+                                                   CommentDto commentDto) {
+        CommentDto updatedComment = commentService.updateComment(postId, commentId, commentDto);
+        return new CommentNotification("UPDATE", postId, updatedComment);
+    }
+
+    @MessageMapping("/posts/{postId}/comments/{commentId}/delete")
+    @SendTo("/topic/posts/{postId}/comments")
+    public CommentNotification handleCommentDelete(@DestinationVariable Long postId,
+                                                   @DestinationVariable Long commentId) {
+        CommentDto deletedComment = commentService.getCommentById(postId, commentId);
+        commentService.deleteComment(postId, commentId);
+        return new CommentNotification("DELETE", postId, deletedComment);
+    }
+
 }

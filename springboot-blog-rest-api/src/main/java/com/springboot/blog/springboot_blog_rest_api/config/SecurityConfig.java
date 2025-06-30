@@ -84,6 +84,8 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/vnpay/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.GET).permitAll()
                 .anyRequest().authenticated());
     }
