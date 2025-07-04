@@ -13,4 +13,5 @@ public interface PostService {
     int getTotalPosts();
     ListResponse<PostDto> getPostsByCategoryId(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir);
     ListResponse<PostDto> searchPostsByTitle(String title, int pageNo, int pageSize, String sortBy, String sortDir);
+    String generateDescription(String content);
 }

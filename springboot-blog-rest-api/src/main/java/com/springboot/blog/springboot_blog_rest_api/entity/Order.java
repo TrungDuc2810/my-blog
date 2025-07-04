@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -23,6 +24,8 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
+    @OneToMany(mappedBy = "order")
+    private List<OrderItem> items;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

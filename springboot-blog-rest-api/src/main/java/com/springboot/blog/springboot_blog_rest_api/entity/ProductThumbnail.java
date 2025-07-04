@@ -1,13 +1,13 @@
 package com.springboot.blog.springboot_blog_rest_api.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.bind.annotation.CrossOrigin;
+
+import java.io.Serializable;
 
 @CrossOrigin("*")
 @Entity
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="product_thumbnails")
-public class ProductThumbnail {
+public class ProductThumbnail implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;

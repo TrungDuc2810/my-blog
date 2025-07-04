@@ -11,17 +11,15 @@ import com.springboot.blog.springboot_blog_rest_api.repository.CategoryRepositor
 import com.springboot.blog.springboot_blog_rest_api.repository.MediaRepository;
 import com.springboot.blog.springboot_blog_rest_api.repository.PostRepository;
 import com.springboot.blog.springboot_blog_rest_api.service.PostService;
+import com.springboot.blog.springboot_blog_rest_api.utils.PaginationUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -29,12 +27,18 @@ public class PostServiceImpl implements PostService {
     private final MediaRepository mediaRepository;
     private ModelMapper mapper;
     private CategoryRepository categoryRepository;
+    private AIService AIService;
 
-    public PostServiceImpl(PostRepository postRepository, ModelMapper mapper, CategoryRepository categoryRepository, MediaRepository mediaRepository) {
+    public PostServiceImpl(PostRepository postRepository,
+                           ModelMapper mapper,
+                           CategoryRepository categoryRepository,
+                           MediaRepository mediaRepository,
+                           AIService AIService) {
         this.postRepository = postRepository;
         this.mapper = mapper;
         this.categoryRepository = categoryRepository;
         this.mediaRepository = mediaRepository;
+        this.AIService = AIService;
     }
 
     private PostDto mapToDTO(Post post) {
@@ -46,6 +50,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "posts", allEntries = true),
+            @CacheEvict(value = "postsByCategory", allEntries = true),
+            @CacheEvict(value = "postsByTitle", allEntries = true)
+    })
     public PostDto createPost(PostDto postDto) {
         Category category = categoryRepository.findById(postDto.getCategoryId()).orElseThrow(()
                 -> new ResourceNotFoundException("Category", " id", String.valueOf(postDto.getCategoryId())));
@@ -71,48 +80,39 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Cacheable(value = "posts", key = "'page_'+#pageNo + '_size_'+#pageSize + '_sortBy_'+#sortBy + '_sortDir_'+#sortDir")
     public ListResponse<PostDto> getAllPosts(int pageNo, int pageSize, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        System.out.println("Getting all posts with: " + "pageNo=" + pageNo + " pageSize=" + pageSize + " sortBy=" + sortBy + " sortDir=" + sortDir);
 
-        // create pageable instance
-        PageRequest pageable = PageRequest.of(pageNo, pageSize, sort);
+        PageRequest pageRequest = PaginationUtils.createPageRequest(pageNo, pageSize, sortBy, sortDir);
 
-        Page<Post> posts = postRepository.findAll(pageable);
+        Page<Post> posts = postRepository.findAll(pageRequest);
 
-        // get content for page object
-        List<Post> listOfPosts = posts.getContent();
-
-        List<PostDto> content = listOfPosts.stream().map(this::mapToDTO).collect(Collectors.toList());
-
-        ListResponse<PostDto> postResponse = new ListResponse<>();
-        postResponse.setContent(content);
-        postResponse.setPageNo(posts.getNumber());
-        postResponse.setPageSize(posts.getSize());
-        postResponse.setTotalElements((int) posts.getTotalElements());
-        postResponse.setTotalPages(posts.getTotalPages());
-        postResponse.setLast(posts.isLast());
-
-        return postResponse;
+        return PaginationUtils.toListResponse(posts, this::mapToDTO);
     }
 
     @Override
     @Cacheable(value = "posts", key = "#id")
     public PostDto getPostById(Long id) {
-        long startTime = System.currentTimeMillis();
         System.out.println("Getting post by id: " + id);
 
         Post post = postRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Post", "id", String.valueOf(id)));
 
-        long endTime = System.currentTimeMillis();
-        System.out.println("Time taken to get post by id: " + (endTime - startTime) + " ms");
-
         return mapToDTO(post);
     }
 
     @Override
-    @CachePut(value = "posts", key = "#id")
+    @Caching(
+            put = {
+                    @CachePut(value = "posts", key = "#id")
+            },
+            evict = {
+                    @CacheEvict(value = "posts", allEntries = true),
+                    @CacheEvict(value = "postsByCategory", allEntries = true),
+                    @CacheEvict(value = "postsByTitle", allEntries = true)
+            }
+    )
     public PostDto updatePost(PostDto postDTO, Long id) {
         System.out.println("Updating post by id: " + id);
 
@@ -147,7 +147,12 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    @CacheEvict(value = "posts", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#id"),
+            @CacheEvict(value = "posts", allEntries = true),
+            @CacheEvict(value = "postsByCategory", allEntries = true),
+            @CacheEvict(value = "postsByTitle", allEntries = true)
+    })
     public void deletePostById(Long id) {
         System.out.println("Deleting post by id: " + id);
 
@@ -161,56 +166,38 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Cacheable(value = "postsByCategory", key = "'category_'+#categoryId + '_page_'+#pageNo + '_size_'+#pageSize + '_sortBy_'+#sortBy + '_sortDir_'+#sortDir")
     public ListResponse<PostDto> getPostsByCategoryId(Long categoryId, int pageNo, int pageSize, String sortBy, String sortDir) {
         categoryRepository.findById(categoryId).orElseThrow(() ->
                 new ResourceNotFoundException("Category", "id", String.valueOf(categoryId))
         );
 
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+        PageRequest pageRequest = PaginationUtils.createPageRequest(pageNo, pageSize, sortBy, sortDir);
 
-        PageRequest pageable = PageRequest.of(pageNo, pageSize, sort);
+        Page<Post> posts = postRepository.findByCategoryId(categoryId, pageRequest);
 
-        Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
-
-        List<PostDto> content = posts.getContent().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-
-        ListResponse<PostDto> postResponse = new ListResponse<>();
-        postResponse.setContent(content);
-        postResponse.setPageNo(posts.getNumber());
-        postResponse.setPageSize(posts.getSize());
-        postResponse.setTotalElements((int) posts.getTotalElements());
-        postResponse.setTotalPages(posts.getTotalPages());
-        postResponse.setLast(posts.isLast());
-
-        return postResponse;
+        return PaginationUtils.toListResponse(posts, this::mapToDTO);
     }
 
     @Override
+    @Cacheable(value = "postsByTitle", key = "'title_'+#title + '_page_'+#pageNo + '_size_'+#pageSize + '_sortBy_'+#sortBy + '_sortDir_'+#sortDir")
     public ListResponse<PostDto> searchPostsByTitle(String title, int pageNo, int pageSize, String sortBy, String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+        PageRequest pageRequest = PaginationUtils.createPageRequest(pageNo, pageSize, sortBy, sortDir);
 
-        PageRequest pageable = PageRequest.of(pageNo, pageSize, sort);
+        Page<Post> posts = postRepository.searchByTitle(title, pageRequest);
 
-        Page<Post> posts = postRepository.searchByTitle(title, pageable);
+        return PaginationUtils.toListResponse(posts, this::mapToDTO);
+    }
 
-        List<PostDto> content = posts.getContent().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+    @Override
+    public String generateDescription(String content) {
+        String prompt = """
+                From this title: %s, write a paragraph with at least 50 characters to start the article with the above title..
+                """.formatted(content);
 
-        ListResponse<PostDto> postResponse = new ListResponse<>();
-        postResponse.setContent(content);
-        postResponse.setPageNo(posts.getNumber());
-        postResponse.setPageSize(posts.getSize());
-        postResponse.setTotalElements((int) posts.getTotalElements());
-        postResponse.setTotalPages(posts.getTotalPages());
-        postResponse.setLast(posts.isLast());
+        String genDescription = AIService.chat(prompt);
+        String trimDescription = genDescription.replaceFirst("(?i)^.*?(?=\\n\\n|\\n)", "").trim();
 
-        return postResponse;
+        return trimDescription;
     }
 }

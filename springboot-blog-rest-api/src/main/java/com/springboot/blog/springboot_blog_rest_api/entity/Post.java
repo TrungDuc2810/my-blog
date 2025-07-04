@@ -22,7 +22,7 @@ public class Post implements Serializable {
     private long id;
     @Column(name="title", nullable=false)
     private String title;
-    @Column(name="description", nullable=false)
+    @Column(name="description", columnDefinition = "TEXT", nullable=false)
     private String description;
     @Column(name="content", columnDefinition = "LONGTEXT", nullable=false)
     private String content;
@@ -30,6 +30,7 @@ public class Post implements Serializable {
     private String postedAt;
     @Column(name="lastUpdated")
     private String lastUpdated;
+    private long views;
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Media media;
     @OneToMany(mappedBy="post", cascade=CascadeType.ALL, orphanRemoval=true)

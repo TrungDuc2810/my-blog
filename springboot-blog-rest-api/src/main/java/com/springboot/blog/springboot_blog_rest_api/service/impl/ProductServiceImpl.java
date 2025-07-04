@@ -1,6 +1,5 @@
 package com.springboot.blog.springboot_blog_rest_api.service.impl;
 
-import com.springboot.blog.springboot_blog_rest_api.entity.Media;
 import com.springboot.blog.springboot_blog_rest_api.entity.Product;
 import com.springboot.blog.springboot_blog_rest_api.entity.ProductThumbnail;
 import com.springboot.blog.springboot_blog_rest_api.exception.ResourceNotFoundException;
@@ -13,6 +12,10 @@ import com.springboot.blog.springboot_blog_rest_api.service.ProductService;
 import com.springboot.blog.springboot_blog_rest_api.utils.PaginationUtils;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "products", allEntries = true)
+    })
     public ProductDto createProduct(ProductDto productDto) {
         Product product = mapToEntity(productDto);
 
@@ -60,6 +66,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @Caching(
+            put = {
+                    @CachePut(value = "products", key = "#id")
+            },
+            evict = {
+                    @CacheEvict(value = "products", allEntries = true)
+            }
+    )
     public ProductDto updateProduct(long id, ProductDto productDto) {
         Product product = productRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Product", "id", String.valueOf(id)));
@@ -90,6 +104,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products", key = "#id")
     public ProductDto getProduct(long id) {
         Product product = productRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Product", "id", String.valueOf(id)));
@@ -98,6 +113,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products", key = "'page_'+#pageNo + '_size_'+#pageSize + '_sortBy_'+#sortBy + '_sortDir_'+#sortDir")
     public ListResponse<ProductDto> getProducts(int pageNo, int pageSize, String sortBy, String sortDir) {
         PageRequest pageRequest = PaginationUtils.createPageRequest(pageNo, pageSize, sortBy, sortDir);
         Page<Product> products = productRepository.findAll(pageRequest);
@@ -106,6 +122,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "products", key = "#id"),
+            @CacheEvict(value = "products", allEntries = true)
+    })
     public void deleteProduct(long id) {
         Product product = productRepository.findById(id).orElseThrow(()
                 -> new ResourceNotFoundException("Product", "id", String.valueOf(id)));

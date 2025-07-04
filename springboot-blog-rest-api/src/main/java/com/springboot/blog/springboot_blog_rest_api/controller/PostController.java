@@ -4,6 +4,7 @@ import com.springboot.blog.springboot_blog_rest_api.payload.ListResponse;
 import com.springboot.blog.springboot_blog_rest_api.payload.MediaDto;
 import com.springboot.blog.springboot_blog_rest_api.payload.PostDto;
 import com.springboot.blog.springboot_blog_rest_api.service.PostService;
+import com.springboot.blog.springboot_blog_rest_api.service.impl.RedisCountViewsService;
 import com.springboot.blog.springboot_blog_rest_api.utils.AppConstants;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,16 +19,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
-
     private PostService postService;
+    private RedisCountViewsService redisCountViewsService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, RedisCountViewsService redisCountViewsService) {
         this.postService = postService;
+        this.redisCountViewsService = redisCountViewsService;
     }
 
     // Create blog post rest api
@@ -95,7 +98,12 @@ public class PostController {
     // Get post by id
     @GetMapping("/{id}")
     public ResponseEntity<PostDto> getPostById(@PathVariable(name = "id") long id){
-        return ResponseEntity.ok(postService.getPostById(id));
+        redisCountViewsService.incrementPostView(id);
+
+        PostDto postDto = postService.getPostById(id);
+        postDto.setViews(redisCountViewsService.getPostViews(id));
+
+        return ResponseEntity.ok(postDto);
     }
 
     // Get posts by category id
@@ -146,5 +154,12 @@ public class PostController {
             )
     {
         return ResponseEntity.ok(postService.searchPostsByTitle(title, pageNo, pageSize, sortBy, sortDir));
+    }
+
+    @PostMapping("/generate-description")
+    public ResponseEntity<String> generateDescription(@RequestBody Map<String, String> body) {
+        String content = body.get("content");
+        String description = postService.generateDescription(content);
+        return ResponseEntity.ok(description);
     }
 }

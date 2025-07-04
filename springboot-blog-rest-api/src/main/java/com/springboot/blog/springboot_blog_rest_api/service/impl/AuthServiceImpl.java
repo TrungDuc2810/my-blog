@@ -98,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BlogAPIException(HttpStatus.BAD_REQUEST, "User not found!!!");
         }
         if (user.isEnabled()) {
-            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "User is enabled!!!");
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "User is unenabled!!!");
         }
 
         user.setEnabled(true);

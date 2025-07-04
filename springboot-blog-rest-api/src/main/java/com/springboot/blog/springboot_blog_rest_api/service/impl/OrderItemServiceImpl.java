@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class OrderItemServiceImpl implements OrderItemService {
     private final OrderItemRepository orderItemRepository;
@@ -81,6 +83,17 @@ public class OrderItemServiceImpl implements OrderItemService {
 
         return PaginationUtils.toListResponse(orderItemPage,
                 orderItem -> mapper.mapToDto(orderItem, OrderItemDto.class));
+    }
+
+    @Override
+    public List<OrderItemDto> getOrderItemsByOrderId(long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order", "id", String.valueOf(orderId)));
+
+        List<OrderItem> orderItems = orderItemRepository.findOrderItemsByOrderId(orderId);
+
+        return orderItems.stream()
+                .map(orderItem -> mapper.mapToDto(orderItem, OrderItemDto.class))
+                .toList();
     }
 
     @Override
