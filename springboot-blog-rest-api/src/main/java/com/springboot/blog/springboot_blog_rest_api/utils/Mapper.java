@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 public class Mapper {
     private final ModelMapper modelMapper;
 
-    public Mapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
+    public Mapper(ModelMapper modelMapper) {this.modelMapper = modelMapper;
     }
 
     public <D, E> D mapToDto(E entity, Class<D> dtoClass) {

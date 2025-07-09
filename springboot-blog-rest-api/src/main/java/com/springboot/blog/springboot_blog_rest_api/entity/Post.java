@@ -33,18 +33,18 @@ public class Post implements Serializable {
     private long views;
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Media media;
-    @OneToMany(mappedBy="post", cascade=CascadeType.ALL, orphanRemoval=true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval=true)
     private Set<Comment> comments = new HashSet<>();
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="category_id")
     private Category category;
     @PrePersist
     public void prePersist() {
-        this.postedAt = LocalDateTime.now().toString();  // Set the created timestamp
-        this.lastUpdated = LocalDateTime.now().toString();  // Set the updated timestamp
+        this.postedAt = LocalDateTime.now().toString();
+        this.lastUpdated = LocalDateTime.now().toString();
     }
     @PreUpdate
     public void preUpdate() {
-        this.lastUpdated = LocalDateTime.now().toString();  // Set the updated timestamp
+        this.lastUpdated = LocalDateTime.now().toString();
     }
 }
