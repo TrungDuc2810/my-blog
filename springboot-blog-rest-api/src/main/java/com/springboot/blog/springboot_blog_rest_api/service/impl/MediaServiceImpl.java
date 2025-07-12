@@ -31,7 +31,7 @@ public class MediaServiceImpl implements MediaService {
     public List<MediaDto> getAllMedia() {
         List<Media> mediaList = mediaRepository.findAll();
         return mediaList.stream()
-                .map(media -> new MediaDto(media.getId(), media.getName(), media.getType(), media.getFilePath()))
+                .map(media -> new MediaDto(media.getName(), media.getType(), media.getFilePath()))
                 .collect(Collectors.toList());
     }
 

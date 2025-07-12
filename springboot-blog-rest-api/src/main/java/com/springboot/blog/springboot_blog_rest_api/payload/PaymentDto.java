@@ -1,13 +1,16 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
-import lombok.Data;
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
-public class PaymentDto {
-    private long id;
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentDto extends BaseDto {
     private String vnp_BankCode;
     private String vnp_TransactionNo;
     private String vnp_TmnCode;
@@ -21,7 +24,6 @@ public class PaymentDto {
     private String vnp_CardType;
     private String vnp_TransactionStatus;
     private String paymentStatus;
-    private LocalDateTime created_at;
     private String raw_callback_url;
     private long orderId;
 }

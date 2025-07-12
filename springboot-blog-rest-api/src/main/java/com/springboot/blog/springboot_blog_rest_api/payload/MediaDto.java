@@ -1,16 +1,17 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.*;
-
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Setter
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class MediaDto implements Serializable {
-    private Long id;
+@NoArgsConstructor
+public class MediaDto extends BaseDto {
     @NotEmpty
     private String name;
     @NotEmpty

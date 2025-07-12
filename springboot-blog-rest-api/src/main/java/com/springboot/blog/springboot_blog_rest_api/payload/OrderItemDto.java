@@ -1,12 +1,15 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
-import lombok.Data;
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
-public class OrderItemDto {
-    private long id;
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class OrderItemDto extends BaseDto {
     private int quantity;
     private BigDecimal price;
     private BigDecimal discountPrice;

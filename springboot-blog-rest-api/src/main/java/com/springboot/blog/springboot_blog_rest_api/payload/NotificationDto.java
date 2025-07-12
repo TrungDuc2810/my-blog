@@ -1,15 +1,14 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationDto {
+public class NotificationDto extends BaseDto {
     private String message;
-    private LocalDateTime createdAt;
 }

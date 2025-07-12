@@ -1,20 +1,16 @@
 package com.springboot.blog.springboot_blog_rest_api.entity;
 
+import com.springboot.blog.springboot_blog_rest_api.entity.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.io.Serializable;
-
-@Data
-@AllArgsConstructor
+@Setter
+@Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="comments")
-public class Comment implements Serializable {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY) private long id;
+public class Comment extends BaseEntity {
     private String name;
     private String email;
     private String body;

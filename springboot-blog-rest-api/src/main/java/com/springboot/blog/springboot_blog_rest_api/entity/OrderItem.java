@@ -1,17 +1,18 @@
 package com.springboot.blog.springboot_blog_rest_api.entity;
 
+import com.springboot.blog.springboot_blog_rest_api.entity.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Entity
-@Data
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "order_items")
-public class OrderItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+public class OrderItem extends BaseEntity {
     @Column(nullable = false)
     private int quantity;
     @Column(nullable = false)

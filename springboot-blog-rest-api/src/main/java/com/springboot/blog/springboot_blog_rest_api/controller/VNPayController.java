@@ -78,7 +78,6 @@ public class VNPayController {
             paymentDto.setVnp_CardType(params.get("vnp_CardType"));
             paymentDto.setVnp_TransactionStatus(params.get("vnp_TransactionStatus"));
             paymentDto.setRaw_callback_url(request.getRequestURL() + "?" + request.getQueryString());
-            paymentDto.setCreated_at(LocalDateTime.now());
             paymentDto.setPaymentStatus("Success");
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");

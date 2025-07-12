@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentNotification {
-    private String type; // Loại thông báo: CREATE, UPDATE, DELETE
-    private Long postId; // ID của bài viết
-    private CommentDto comment; // Thông tin comment
+public class CommentNotification{
+    private String type;
+    private Long postId;
+    private CommentDto comment;
 }

@@ -1,10 +1,13 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
-import lombok.Data;
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
+import lombok.*;
 
-@Data
-public class CartItemDto {
-    private long id;
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CartItemDto extends BaseDto {
     private int quantity;
     private long productId;
     private long userId;

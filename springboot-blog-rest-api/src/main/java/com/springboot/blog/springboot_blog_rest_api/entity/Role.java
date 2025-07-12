@@ -1,5 +1,6 @@
 package com.springboot.blog.springboot_blog_rest_api.entity;
 
+import com.springboot.blog.springboot_blog_rest_api.entity.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,9 +13,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name="roles")
-public class Role {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private long id;
+public class Role extends BaseEntity {
     private String name;
 }

@@ -1,16 +1,17 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
 import com.springboot.blog.springboot_blog_rest_api.entity.OrderStatus;
-import lombok.Data;
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
-@Data
-public class OrderDto {
-    private long id;
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class OrderDto extends BaseDto {
     private BigDecimal amountMoney;
-    private LocalDateTime createdAt;
     private long userId;
     private OrderStatus status;
 }

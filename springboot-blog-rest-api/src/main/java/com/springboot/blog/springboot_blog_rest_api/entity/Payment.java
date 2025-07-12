@@ -1,18 +1,19 @@
 package com.springboot.blog.springboot_blog_rest_api.entity;
 
+import com.springboot.blog.springboot_blog_rest_api.entity.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "payments")
-public class Payment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+public class Payment extends BaseEntity {
     private String vnp_BankCode;
     private String vnp_TransactionNo;
     private String vnp_TmnCode;
@@ -26,15 +27,10 @@ public class Payment {
     private String vnp_CardType;
     private String vnp_TransactionStatus;
     private String paymentStatus;
-    private LocalDateTime created_at;
     @Lob
     @Column(columnDefinition = "TEXT")
     private String raw_callback_url;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-    @PrePersist
-    protected void onCreate() {
-        this.created_at = LocalDateTime.now();
-    }
 }

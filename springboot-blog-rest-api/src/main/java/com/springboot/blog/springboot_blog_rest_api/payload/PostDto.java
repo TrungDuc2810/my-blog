@@ -1,17 +1,20 @@
 package com.springboot.blog.springboot_blog_rest_api.payload;
 
+import com.springboot.blog.springboot_blog_rest_api.payload.common.BaseDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.Serializable;
 import java.util.Set;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
-public class PostDto implements Serializable {
-    private long id;
+@AllArgsConstructor
+public class PostDto extends BaseDto {
     @NotEmpty
     @Size(min = 2, message = "Post title should have at least 2 characters")
     private String title;
@@ -20,8 +23,6 @@ public class PostDto implements Serializable {
     private String description;
     @NotEmpty
     private String content;
-    private String postedAt;
-    private String lastUpdated;
     private long views;
     private MediaDto media;
     private Set<CommentDto> comments;
